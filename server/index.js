@@ -38,3 +38,15 @@ const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`)
 })
+
+import { searchMovie } from './services/tmdb.js'
+
+app.get('/api/test-tmdb', async (req, res) => {
+  try {
+    const movie = await searchMovie('dsfkdsfkjds')
+    res.json(movie)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Could not reach TMDB' })
+  }
+})
