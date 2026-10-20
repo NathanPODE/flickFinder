@@ -39,3 +39,14 @@ app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`)
 })
 
+import { getMovieSuggestions } from './services/gemini.js'
+
+app.get('/api/test-gemini', async (req, res) => {
+  try {
+    const suggestions = await getMovieSuggestions('funny action movies')
+    res.json(suggestions)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Could not reach Gemini' })
+  }
+})
