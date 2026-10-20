@@ -4,7 +4,6 @@ import pool from '../db/pool.js'
 import jwt from 'jsonwebtoken'
 import registerSchema from '../schemas/auth.js'
 import { z } from 'zod'
-import cookieParser from 'cookie-parser'
 
 const router = express.Router();
 
@@ -15,7 +14,7 @@ router.post('/register', async (req, res) => {
         const { email, password } = req.body || {}
         const normalizedEmail = email.trim().toLowerCase();
 
-        const parse = registerSchema.safeParse({ normalizedEmail, password })
+        const parse = registerSchema.safeParse({ email: normalizedEmail, password })
 
         if(!parse.success){
             const firstError = parse.error.issues[0]?.message || 'Invalid input';
@@ -54,7 +53,7 @@ router.post('/login', async (req, res) => {
         const normalizedEmail = email.trim().toLowerCase();
 
         const result = await pool.query(
-            `SELECT id, email, hashed_passowrd FROM users WHERE email=$1`,
+            `SELECT id, email, hashed_password FROM users WHERE email=$1`,
             [normalizedEmail]
         )
 
@@ -63,10 +62,10 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ error: 'Invalid email or password'})
         }
 
-        const passwordMatches = await bcrypt.compare(password, user.hashed_passowrd)
+        const passwordMatches = await bcrypt.compare(password, user.hashed_password)
         
         if(!passwordMatches){
-            return resizeTo.status(401).json({ error: 'Invalid email or password'})
+            return res.status(401).json({ error: 'Invalid email or password'})
         }
         
         const token = jwt.sign(
@@ -77,12 +76,12 @@ router.post('/login', async (req, res) => {
 
         res.cookie('token', token, {
         httpOnly: true,                 
-        sameSite: 'none', 
-        secure: true,            
+        sameSite: 'lax', 
+        secure: false,            
         maxAge: 3600000               
         });
 
-        res.status(201).json({ user: { id: user.id, email: user.email}})
+        res.json({ user: { id: user.id, email: user.email}})
      } catch (err) {
         console.error(err)
         res.status(500).json({ error: 'Something went wrong'})
