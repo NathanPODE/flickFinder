@@ -43,7 +43,7 @@ import { getMovieSuggestions } from './services/gemini.js'
 
 app.get('/api/test-gemini', async (req, res) => {
   try {
-    const suggestions = await getMovieSuggestions('funny action movies')
+    const suggestions = await getMovieSuggestions('Romantic Comedies')
     res.json(suggestions)
   } catch (err) {
     console.error(err)
