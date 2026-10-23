@@ -16,22 +16,23 @@ router.post('/', async (req, res) => {
             return res.status(400).json({ error: 'Prompt is required' })
         }
 
-        const suggestions = await getMovieSuggestions(prompt, excludedTitles)
-        const movies = []
+        const suggestions = await getMovieSuggestions(prompt, excludeTitles)
 
-        for(const suggestion of suggestions){
+        const moviePromises = suggestions.map(async (suggestion) => {
             const tmdbMovie = await searchMovie(suggestion.title)
-
-            if (tmdbMovie) {
-                movies.push({
-                    ...tmdbMovie,
-                    reason: suggestion.reason // Attach Gemini's reason to the TMDB data!
-                })
+            if (!tmdbMovie) return null
+            return {
+                ...tmdbMovie,
+                reason: suggestion.reason
             }
-        }
+        })
 
-        if(movies.length === 0){
-            return res.status(404).json({ error: 'No movies found' });
+        const results = await Promise.all(moviePromises)
+        
+        const movies = results.filter(movie => movie !== null)
+
+        if (movies.length === 0) {
+            return res.status(404).json({ error: 'No movies found' })
         }
 
         return res.status(200).json({ movies })
@@ -40,3 +41,5 @@ router.post('/', async (req, res) => {
         return res.status(500).json({ error: 'Something went wrong' })
     }
 })
+
+export default router
