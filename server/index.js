@@ -4,6 +4,7 @@ import cors from 'cors'
 import authRouter from './routes/auth.js'
 import cookieParser from 'cookie-parser'
 import pool from './db/pool.js'
+import { getMovieSuggestions } from './services/gemini.js'
 
 dotenv.config()
 
@@ -33,14 +34,6 @@ app.get('/api/health', async (req, res) => {
     }
 })
 
-const PORT = process.env.PORT || 4000;
-
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`)
-})
-
-import { getMovieSuggestions } from './services/gemini.js'
-
 app.get('/api/test-gemini', async (req, res) => {
   try {
     const suggestions = await getMovieSuggestions('Romantic Comedies')
@@ -49,4 +42,10 @@ app.get('/api/test-gemini', async (req, res) => {
     console.error(err)
     res.status(500).json({ error: 'Could not reach Gemini' })
   }
+})
+
+const PORT = process.env.PORT || 4000;
+
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`)
 })
