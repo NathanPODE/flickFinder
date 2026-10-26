@@ -2,6 +2,7 @@ import express from 'express'
 import requireAuth from '../middleware/auth.js'
 import { getMovieSuggestions } from '../services/gemini.js'
 import { searchMovie } from '../services/tmdb.js'
+import suggestionsSchema from '../schemas/suggestions.js'
 import pool from '../db/pool.js'
 
 const router = express.Router()
@@ -10,11 +11,14 @@ router.use(requireAuth)
 
 router.post('/', async (req, res) => {
     try {
-        const { prompt, excludeTitles } = req.body || {}
+        const parse = suggestionsSchema.safeParse(req.body || {})
 
-        if (!prompt) {
-            return res.status(400).json({ error: 'Prompt is required' })
+        if (!parse.success) {
+            const firstError = parse.error.issues[0]?.message || 'Invalid input'
+            return res.status(400).json({ error: firstError })
         }
+
+        const { prompt, excludeTitles } = parse.data
 
         const suggestions = await getMovieSuggestions(prompt, excludeTitles)
 
