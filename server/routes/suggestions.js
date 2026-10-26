@@ -3,7 +3,6 @@ import requireAuth from '../middleware/auth.js'
 import { getMovieSuggestions } from '../services/gemini.js'
 import { searchMovie } from '../services/tmdb.js'
 import suggestionsSchema from '../schemas/suggestions.js'
-import pool from '../db/pool.js'
 
 const router = express.Router()
 
