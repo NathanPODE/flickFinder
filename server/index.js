@@ -1,8 +1,11 @@
 import express from 'express'
 import * as dotenv from 'dotenv'
 import cors from 'cors'
+
 import authRouter from './routes/auth.js'
 import suggestionRouter from './routes/suggestions.js'
+import movieRouter from './routes/movies.js'
+
 import cookieParser from 'cookie-parser'
 import pool from './db/pool.js'
 import { getMovieSuggestions } from './services/gemini.js'
@@ -23,6 +26,7 @@ app.use(cookieParser())
 
 app.use('/api/auth', authRouter)
 app.use('/api/suggestions', suggestionRouter)
+app.use('/api/movies', movieRouter)
 
 app.get('/', (req, res) => {
     res.status(200).json({ message: 'Working'})

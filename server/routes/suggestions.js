@@ -3,6 +3,7 @@ import requireAuth from '../middleware/auth.js'
 import { getMovieSuggestions } from '../services/gemini.js'
 import { searchMovie } from '../services/tmdb.js'
 import suggestionsSchema from '../schemas/suggestions.js'
+import pool from '../db/pool.js'
 
 const router = express.Router()
 
@@ -17,9 +18,18 @@ router.post('/', async (req, res) => {
             return res.status(400).json({ error: firstError })
         }
 
-        const { prompt, excludeTitles } = parse.data
+        const { prompt, excludeTitles = [] } = parse.data
 
-        const suggestions = await getMovieSuggestions(prompt, excludeTitles)
+        const watchlistResult = await pool.query(
+            'SELECT title FROM user_movies WHERE user_id = $1',
+            [req.userId]
+        )
+        
+        const watchlistTitles = watchlistResult.rows.map((row) => row.title)
+
+        const allExcluded = [...excludeTitles, ...watchlistTitles]
+
+        const suggestions = await getMovieSuggestions(prompt, allExcluded)
 
         const moviePromises = suggestions.map(async (suggestion) => {
             const tmdbMovie = await searchMovie(suggestion.title)
