@@ -40,7 +40,7 @@ router.post('/', async (req, res) => {
 
 router.get('/', async (req, res) => {
     try {
-        
+
         if (req.query.watched !== 'true' && req.query.watched !== 'false') {
             return res.status(400).json({ error: 'watched query parameter must be "true" or "false"' })
         }
@@ -57,7 +57,33 @@ router.get('/', async (req, res) => {
         res.json({ movies: result.rows })
     } catch (err) {
         console.error(err)
-        res.status(500).json({ error: 'Something went wrong'})
+        res.status(500).json({ error: 'Something went wrong' })
+    }
+})
+
+router.patch('/:id', async (req, res) => {
+    try {
+        const id = Number(req.params.id)
+
+        if(!Number.isInteger(id)){
+            return res.status(400).json({ error: 'Invalid movie id'})
+        }
+
+        const result = await pool.query(
+            `UPDATE user_movies SET watched = NOT watched WHERE id = $1 and user_id = $2 RETURNING id, title, watched`,
+            [id, req.userId]
+        )
+
+        const movie = result.rows[0]
+
+        if(!movie){
+            return res.status(404).json({ error: 'Movie not found' });
+        }
+
+        res.json({ movie })
+    } catch (err) {
+        console.error(err)
+        return res.status(500).json({ error: 'Something went wrong' })
     }
 })
 
