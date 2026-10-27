@@ -38,4 +38,27 @@ router.post('/', async (req, res) => {
     }
 })
 
+router.get('/', async (req, res) => {
+    try {
+        
+        if (req.query.watched !== 'true' && req.query.watched !== 'false') {
+            return res.status(400).json({ error: 'watched query parameter must be "true" or "false"' })
+        }
+
+        const watched = req.query.watched === 'true'
+
+        const result = await pool.query(
+            `SELECT id, tmdb_id, title, poster_path, synopsis, watched, created_at
+             FROM user_movies 
+             WHERE user_id = $1 AND watched = $2`,
+            [req.userId, watched]
+        )
+
+        res.json({ movies: result.rows })
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({ error: 'Something went wrong'})
+    }
+})
+
 export default router
