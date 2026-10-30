@@ -5,6 +5,7 @@ import cors from 'cors'
 import authRouter from './routes/auth.js'
 import suggestionRouter from './routes/suggestions.js'
 import movieRouter from './routes/movies.js'
+import settingsRouter from './routes/settings.js'
 
 import cookieParser from 'cookie-parser'
 import pool from './db/pool.js'
@@ -27,6 +28,7 @@ app.use(cookieParser())
 app.use('/api/auth', authRouter)
 app.use('/api/suggestions', suggestionRouter)
 app.use('/api/movies', movieRouter)
+app.use('/api/settings', settingsRouter)
 
 app.get('/', (req, res) => {
     res.status(200).json({ message: 'Working'})
