@@ -2,7 +2,8 @@ import express from 'express'
 import bcrypt from 'bcrypt'
 import pool from '../db/pool.js'
 import requireAuth from '../middleware/auth.js'
-import { changeEmailSchema } from '../schemas/auth.js'
+import { changeEmailSchema, deleteAccountSchema } from '../schemas/auth.js'
+import { COOKIE_OPTIONS } from '../config/cookies.js'
 
 const router = express.Router()
 
@@ -48,6 +49,47 @@ router.patch('/email', async (req, res) => {
         }
         console.error(err)
         res.status(500).json({ error: 'Something went wrong' })
+    }
+})
+
+router.delete('/account', async (req, res) => {
+    try {
+        const parse = deleteAccountSchema.safeParse(req.body || {})
+
+        if(!parse.success){
+            const firstError = parse.error.issues[0]?.message || 'Invalid input';
+            return res.status(400).json({ error: firstError });
+        }
+
+        const { password } = parse.data
+
+        const lookup = await pool.query(
+            `SELECT hashed_password FROM users WHERE id = $1`,
+            [req.userId]
+        )
+
+        const user = lookup.rows[0];
+
+        if(!user){
+            return res.status(404).json({ error: 'User not found' })
+        }
+
+        const passwordMatches = await bcrypt.compare(password, user.hashed_password)
+
+        if(!passwordMatches){
+            return res.status(403).json({ error: 'Incorrect password' })
+        }
+
+        const result = await pool.query(
+            `DELETE FROM users WHERE id = $1 RETURNING id`,
+            [req.userId]
+        )
+
+        res.clearCookie('token', COOKIE_OPTIONS)
+        res.status(204).end()
+    } catch (err) {
+        console.error(err)
+        return res.status(500).json({ error: 'Something went wrong' })
     }
 })
 

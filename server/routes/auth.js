@@ -4,6 +4,7 @@ import pool from '../db/pool.js'
 import jwt from 'jsonwebtoken'
 import registerSchema from '../schemas/auth.js'
 import requireAuth from '../middleware/auth.js'
+import { COOKIE_OPTIONS } from '../config/cookies.js'
 
 
 const router = express.Router();
@@ -73,9 +74,7 @@ router.post('/login', async (req, res) => {
         )
 
         res.cookie('token', token, {
-        httpOnly: true,                 
-        sameSite: 'lax', 
-        secure: false,            
+        ...COOKIE_OPTIONS,            
         maxAge: 3600000               
         });
 
@@ -88,7 +87,7 @@ router.post('/login', async (req, res) => {
 })
 
 router.post('/logout', (req, res) => {
-    res.clearCookie('token', { httpOnly: true, sameSite: 'lax', secure: false })
+    res.clearCookie('token', COOKIE_OPTIONS)
     res.json({ message: 'Logged out'});
 })
 

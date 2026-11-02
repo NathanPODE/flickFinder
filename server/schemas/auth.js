@@ -9,6 +9,13 @@ export const emailField = z.string({error: (issue) => issue.input === undefined
         .email({ error: 'Must be a valid email' })
         .max(255, { error: 'Email must be 255 characters or fewer' })
 
+export const currentPasswordField = z.string({
+        error: (issue) => issue.input === undefined
+            ? 'Password is required'
+            : 'Password must be a string',
+})
+        .min(1, { error: 'Password is required' })
+
 
 const registerSchema = z.object({
     email: emailField,
@@ -23,12 +30,11 @@ const registerSchema = z.object({
 
 export const changeEmailSchema = z.object({
     newEmail: emailField,
-    password: z.string({
-        error: (issue) => issue.input === undefined
-            ? 'Password is required'
-            : 'Password must be a string',
-    })
-        .min(1, { error: 'Password is required' }),
+    password: currentPasswordField,
+})
+
+export const deleteAccountSchema = z.object({
+    password: currentPasswordField,
 })
 
 export default registerSchema
