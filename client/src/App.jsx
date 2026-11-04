@@ -3,22 +3,15 @@ import heroImg from './assets/hero.png'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import './App.css'
-import { useEffect } from 'react'
-
-useEffect(() => {
-    async function checkMe() {
-        const response = await fetch('http://localhost:4000/api/auth/me', {
-            credentials: 'include',
-        })
-        console.log('me status:', response.status)
-        console.log('me body:', await response.json())
-    }
-
-    checkMe()
-}, [])
-
+import { useAuth } from './context/AuthContext.jsx'
 
 function App() {
+   const { user, loading } = useAuth()
+
+    if (loading) return <p>Loading...</p>
+
+    return <p>{user ? `Logged in as ${user.email}` : 'Not logged in'}</p>
+
   return (
     <div className="text-3xl font-bold text-blue-600">Hello there</div>
   )
