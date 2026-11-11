@@ -44,4 +44,53 @@ function Login(){
     if (user) {
         return <Navigate to="/" replace />
     }
+
+    return(
+        <div className='flex flex-col items-center justify-center'>
+            <div className='flex flex-col items-center justify-center'>
+                <h1 className='text-2xl font-bold mb-6'>Flick Finder</h1>
+                <p className='text-base'>Log In</p>
+            </div>
+            
+            <form onSubmit={handleSubmit} className='space-y-4'>
+                <div>
+                    <label className='block text-sm font-medium mb-1'>Email</label>
+                    <input 
+                        type='email'
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className='w-full border rounded px-3 py-2'
+                    />
+                </div>
+
+                <div>
+                    <label className='block text-sm font-medium mb-1'>Password</label>
+                    <input 
+                        type='password'
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        className="w-full border rounded px-3 py-2"
+                    />
+                </div>
+
+                {error && <p className='text-red-600 text-sm'>{error}</p>}
+
+                <button
+                    type='submit'
+                    disabled={loading}
+                    className='w-full bg-blue-600 text-white rounded px-3 py-2 disabled:opacity-50'
+                >
+                    {loading ? 'Logging in...' : 'Log In'}
+                </button>
+            </form>
+
+            <p className="mt-4 text-sm">
+                Don't have an account? <Link to='/register' className='text-blue-600 underline'>Register</Link>
+            </p>
+        </div>
+    )
 }
+
+export default Login
