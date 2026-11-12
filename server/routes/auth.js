@@ -1,10 +1,10 @@
 import express from 'express'
 import bcrypt from 'bcrypt'
 import pool from '../db/pool.js'
-import jwt from 'jsonwebtoken'
 import registerSchema from '../schemas/auth.js'
 import requireAuth from '../middleware/auth.js'
 import { COOKIE_OPTIONS } from '../config/cookies.js'
+import { issueSession } from '../utils/session.js'
 
 
 const router = express.Router();
@@ -30,7 +30,9 @@ router.post('/register', async (req, res) => {
              [email, passwordHash]
         )
 
-        res.status(201).json({ user: result.rows[0] })
+        const user = result.rows[0]
+        issueSession(res, user.id)
+        res.status(201).json({ user })
     } catch (err) {
         if(err.code === '23505'){
             return res.status(409).json({ error: 'An account with that email already exists' })
@@ -67,18 +69,8 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ error: 'Invalid email or password'})
         }
         
-        const token = jwt.sign(
-            { userId: user.id },
-            process.env.JWT_SECRET,
-            {expiresIn: '1h'}
-        )
-
-        res.cookie('token', token, {
-        ...COOKIE_OPTIONS,            
-        maxAge: 3600000               
-        });
-
-        res.json({ user: { id: user.id, email: user.email}})
+        issueSession(res, user.id)
+        res.json({ user: { id: user.id, email: user.email } })
      } catch (err) {
         console.error(err)
         res.status(500).json({ error: 'Something went wrong'})
